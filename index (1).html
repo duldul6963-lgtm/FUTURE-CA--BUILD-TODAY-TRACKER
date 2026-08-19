@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CA Exam Study Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ca: {
+              50: '#eefbf7',
+              100: '#d7f5ec',
+              500: '#0f9f7f',
+              600: '#087f67',
+              700: '#066653',
+              900: '#063d33'
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    html { scroll-behavior: smooth; }
+    body {
+      background:
+        radial-gradient(circle at top left, rgba(15,159,127,.10), transparent 30%),
+        radial-gradient(circle at top right, rgba(59,130,246,.08), transparent 28%),
+        #f8fafc;
+    }
+    .glass {
+      background: rgba(255,255,255,.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+    .progress-bar { transition: width .35s ease; }
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button { opacity: 1; }
+  </style>
+</head>
+
+<body class="min-h-screen text-slate-900">
+<header class="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl">
+  <div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <div class="flex items-center gap-3">
+        <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-ca-600 text-xl font-black text-white shadow-lg shadow-ca-600/20">CA</div>
+        <div>
+          <h1 class="text-xl font-black tracking-tight">CA Exam Study Tracker</h1>
+          <p id="profileSubtitle" class="text-sm text-slate-500">My CA Final · May 2027</p>
+        </div>
+      </div>
+
+      <div class="rounded-2xl bg-slate-100 p-1.5 shadow-inner">
+        <div class="flex gap-1">
+          <button id="finalBtn" onclick="switchProfile('final')" class="rounded-xl px-4 py-2.5 text-sm font-bold transition">
+            My CA Final <span class="hidden sm:inline">(May 2027)</span>
+          </button>
+          <button id="interBtn" onclick="switchProfile('inter')" class="rounded-xl px-4 py-2.5 text-sm font-bold transition">
+            Sister's CA Inter <span class="hidden sm:inline">(Jan Exam)</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+  <section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div class="glass rounded-3xl border border-slate-200 p-5 shadow-sm">
+      <div class="mb-3 flex items-center justify-between">
+        <span class="text-sm font-semibold text-slate-500">Exam Countdown</span>
+        <span class="rounded-xl bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-600">DAYS</span>
+      </div>
+      <div id="examCountdown" class="text-3xl font-black">--</div>
+      <div id="examDateLabel" class="mt-1 text-xs text-slate-500">--</div>
+    </div>
+
+    <div class="glass rounded-3xl border border-slate-200 p-5 shadow-sm">
+      <div class="mb-3 flex items-center justify-between">
+        <span class="text-sm font-semibold text-slate-500">Class Deadline</span>
+        <span class="rounded-xl bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-600">DEC 31</span>
+      </div>
+      <div id="classCountdown" class="text-3xl font-black">--</div>
+      <div class="mt-1 text-xs text-slate-500">Days until class completion deadline</div>
+    </div>
+
+    <div class="glass rounded-3xl border border-slate-200 p-5 shadow-sm">
+      <div class="mb-3 flex items-center justify-between">
+        <span class="text-sm font-semibold text-slate-500">Total Lectures</span>
+        <span class="rounded-xl bg-purple-50 px-2.5 py-1 text-xs font-bold text-purple-600">ALL</span>
+      </div>
+      <div id="totalLectures" class="text-3xl font-black">0</div>
+      <div id="completedLectures" class="mt-1 text-xs text-slate-500">0 completed</div>
+    </div>
+
+    <div class="glass rounded-3xl border border-slate-200 p-5 shadow-sm">
+      <div class="mb-3 flex items-center justify-between">
+        <span class="text-sm font-semibold text-slate-500">Today's Pace</span>
+        <span class="rounded-xl bg-ca-50 px-2.5 py-1 text-xs font-bold text-ca-600">LECTURES/DAY</span>
+      </div>
+      <div id="overallPace" class="text-3xl font-black">0</div>
+      <div class="mt-1 text-xs text-slate-500">Required to finish classes on time</div>
+    </div>
+  </section>
+
+  <section class="glass mt-5 rounded-3xl border border-slate-200 p-5 shadow-sm">
+    <div class="mb-3 flex items-center justify-between gap-4">
+      <div>
+        <h2 class="font-bold">Overall Class Progress</h2>
+        <p class="text-xs text-slate-500">Across all 6 subjects</p>
+      </div>
+      <div id="overallPercent" class="text-2xl font-black text-ca-600">0%</div>
+    </div>
+    <div class="h-3 overflow-hidden rounded-full bg-slate-100">
+      <div id="overallProgressBar" class="progress-bar h-full rounded-full bg-gradient-to-r from-ca-600 to-emerald-400" style="width:0%"></div>
+    </div>
+  </section>
+
+  <section class="mt-7">
+    <div class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <h2 class="text-2xl font-black tracking-tight">Your 6 Subjects</h2>
+        <p class="text-sm text-slate-500">Update lectures whenever you finish a class. Everything saves automatically.</p>
+      </div>
+      <div class="rounded-xl bg-white px-3 py-2 text-xs font-semibold text-slate-500 shadow-sm ring-1 ring-slate-200">💾 Auto-saved locally</div>
+    </div>
+    <div id="subjectsGrid" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3"></div>
+  </section>
+
+  <section class="mt-7 grid gap-5 lg:grid-cols-3">
+    <div class="glass rounded-3xl border border-slate-200 p-6 shadow-sm lg:col-span-2">
+      <div class="mb-5">
+        <h2 class="text-lg font-black">Daily Lecture Plan</h2>
+        <p class="text-sm text-slate-500">The tracker calculates the pace needed to complete classes by December 31.</p>
+      </div>
+      <div id="dailyPlan" class="space-y-3"></div>
+    </div>
+
+    <div class="glass rounded-3xl border border-slate-200 p-6 shadow-sm">
+      <h2 class="text-lg font-black">Quick Settings</h2>
+      <p class="mt-1 text-sm text-slate-500">Change exam dates or reset this profile.</p>
+
+      <div class="mt-5 space-y-4">
+        <label class="block">
+          <span class="mb-1.5 block text-xs font-bold uppercase tracking-wide text-slate-500">Exam Date</span>
+          <input id="examDateInput" type="date" onchange="updateExamDate(this.value)"
+            class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold outline-none focus:border-ca-500 focus:ring-2 focus:ring-ca-500/20">
+        </label>
+
+        <button onclick="resetCurrentProfile()"
+          class="w-full rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-600 transition hover:bg-red-100">
+          Reset Current Profile
+        </button>
+
+        <div class="rounded-2xl bg-slate-50 p-4 text-xs leading-5 text-slate-500">
+          <strong class="text-slate-700">How pace works:</strong><br>
+          Remaining lectures ÷ remaining days until Dec 31.<br>
+          If you fall behind, the required lectures/day automatically increases.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="py-8 text-center text-xs text-slate-400">
+    CA Study Tracker · Data stays in this browser using localStorage
+  </footer>
+</main>
+
+<script>
+const STORAGE_KEY = "ca_exam_study_tracker_v2";
+
+const defaultData = {
+  activeProfile: "final",
+  final: {
+    name: "My CA Final",
+    examLabel: "May 2027",
+    examDate: "2027-05-04",
+    classDeadline: "2026-12-31",
+    subjects: [
+      {name:"Financial Reporting", short:"FR", color:"blue", total:100, completed:0},
+      {name:"Strategic Financial Management", short:"SFM", color:"purple", total:90, completed:0},
+      {name:"Advanced Auditing", short:"Audit", color:"amber", total:85, completed:0},
+      {name:"Direct Tax", short:"DT", color:"red", total:100, completed:0},
+      {name:"Indirect Tax", short:"IDT", color:"cyan", total:90, completed:0},
+      {name:"IBS / Elective", short:"IBS", color:"emerald", total:70, completed:0}
+    ]
+  },
+  inter: {
+    name: "Sister's CA Inter",
+    examLabel: "Jan Exam",
+    examDate: "2027-01-15",
+    classDeadline: "2026-12-31",
+    subjects: [
+      {name:"Advanced Accounting", short:"Accounts", color:"blue", total:100, completed:0},
+      {name:"Corporate & Other Laws", short:"Law", color:"purple", total:75, completed:0},
+      {name:"Taxation", short:"Tax", color:"red", total:110, completed:0},
+      {name:"Cost & Management Accounting", short:"Costing", color:"amber", total:90, completed:0},
+      {name:"Auditing & Ethics", short:"Audit", color:"cyan", total:80, completed:0},
+      {name:"Financial Management & SM", short:"FM/SM", color:"emerald", total:85, completed:0}
+    ]
+  }
+};
+
+function clone(obj) { return JSON.parse(JSON.stringify(obj)); }
+
+function loadData() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return clone(defaultData);
+    const parsed = JSON.parse(saved);
+    if (!parsed.final || !parsed.inter) return clone(defaultData);
+    return parsed;
+  } catch (e) {
+    return clone(defaultData);
+  }
+}
+
+let appData = loadData();
+
+function saveData() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+}
+
+function currentProfile() {
+  return appData[appData.activeProfile];
+}
+
+function switchProfile(profile) {
+  appData.activeProfile = profile;
+  saveData();
+  render();
+}
+
+function updateExamDate(value) {
+  if (!value) return;
+  currentProfile().examDate = value;
+  saveData();
+  render();
+}
+
+function resetCurrentProfile() {
+  const profile = appData.activeProfile;
+  if (!confirm("Reset all lecture progress for " + currentProfile().name + "?")) return;
+  appData[profile] = clone(defaultData[profile]);
+  saveData();
+  render();
+}
+
+function updateSubject(index, field, value) {
+  const subject = currentProfile().subjects[index];
+  let numericValue = Number(value);
+  if (!Number.isFinite(numericValue)) numericValue = 0;
+  numericValue = Math.max(0, Math.floor(numericValue));
+
+  if (field === "completed") {
+    numericValue = Math.min(numericValue, Number(subject.total) || 0);
+  }
+
+  subject[field] = numericValue;
+  saveData();
+  render();
+}
+
+function todayISO() {
+  const d = new Date();
+  return d.getFullYear() + "-" +
+    String(d.getMonth()+1).padStart(2,"0") + "-" +
+    String(d.getDate()).padStart(2,"0");
+}
+
+function daysBetween(from, to) {
+  const start = new Date(from + "T00:00:00");
+  const end = new Date(to + "T00:00:00");
+  return Math.max(0, Math.ceil((end - start) / 86400000));
+}
+
+function formatDate(dateString) {
+  if (!dateString) return "--";
+  const date = new Date(dateString + "T00:00:00");
+  return date.toLocaleDateString("en-IN", {day:"numeric", month:"short", year:"numeric"});
+}
+
+function getSubjectStats(subject) {
+  const total = Math.max(0, Number(subject.total) || 0);
+  const completed = Math.min(total, Math.max(0, Number(subject.completed) || 0));
+  const remaining = Math.max(0, total - completed);
+  const daysLeft = daysBetween(todayISO(), currentProfile().classDeadline);
+  const pace = remaining > 0 ? (daysLeft > 0 ? remaining / daysLeft : remaining) : 0;
+  const percentage = total > 0 ? Math.min(100, completed / total * 100) : 0;
+  return {total, completed, remaining, daysLeft, pace, percentage};
+}
+
+function getOverallStats() {
+  let total = 0, completed = 0;
+  currentProfile().subjects.forEach(s => {
+    total += Number(s.total) || 0;
+    completed += Math.min(Number(s.total) || 0, Number(s.completed) || 0);
+  });
+  const remaining = Math.max(0, total - completed);
+  const daysLeft = daysBetween(todayISO(), currentProfile().classDeadline);
+  const pace = remaining > 0 ? (daysLeft > 0 ? remaining / daysLeft : remaining) : 0;
+  const percentage = total > 0 ? Math.min(100, completed / total * 100) : 0;
+  return {total, completed, remaining, daysLeft, pace, percentage};
+}
+
+const palette = {
+  blue:{icon:"bg-blue-50 text-blue-600",bar:"bg-blue-500",badge:"bg-blue-50 text-blue-600",ring:"focus:border-blue-500 focus:ring-blue-500/20"},
+  purple:{icon:"bg-purple-50 text-purple-600",bar:"bg-purple-500",badge:"bg-purple-50 text-purple-600",ring:"focus:border-purple-500 focus:ring-purple-500/20"},
+  amber:{icon:"bg-amber-50 text-amber-600",bar:"bg-amber-500",badge:"bg-amber-50 text-amber-600",ring:"focus:border-amber-500 focus:ring-amber-500/20"},
+  red:{icon:"bg-red-50 text-red-600",bar:"bg-red-500",badge:"bg-red-50 text-red-600",ring:"focus:border-red-500 focus:ring-red-500/20"},
+  cyan:{icon:"bg-cyan-50 text-cyan-600",bar:"bg-cyan-500",badge:"bg-cyan-50 text-cyan-600",ring:"focus:border-cyan-500 focus:ring-cyan-500/20"},
+  emerald:{icon:"bg-emerald-50 text-emerald-600",bar:"bg-emerald-500",badge:"bg-emerald-50 text-emerald-600",ring:"focus:border-emerald-500 focus:ring-emerald-500/20"}
+};
+
+function renderHeader() {
+  const p = currentProfile();
+  document.getElementById("profileSubtitle").textContent = p.name + " · " + p.examLabel;
+  const active = "rounded-xl px-4 py-2.5 text-sm font-bold transition bg-white text-slate-900 shadow-sm ring-1 ring-slate-200";
+  const inactive = "rounded-xl px-4 py-2.5 text-sm font-bold transition text-slate-500 hover:text-slate-800";
+  document.getElementById("finalBtn").className = appData.activeProfile === "final" ? active : inactive;
+  document.getElementById("interBtn").className = appData.activeProfile === "inter" ? active : inactive;
+}
+
+function renderSummary() {
+  const p = currentProfile();
+  const s = getOverallStats();
+  const examDays = daysBetween(todayISO(), p.examDate);
+
+  document.getElementById("examCountdown").textContent = examDays === 0 ? "TODAY" : examDays;
+  document.getElementById("examDateLabel").textContent = formatDate(p.examDate);
+  document.getElementById("classCountdown").textContent = s.daysLeft === 0 ? "TODAY" : s.daysLeft;
+  document.getElementById("totalLectures").textContent = s.total;
+  document.getElementById("completedLectures").textContent = s.completed + " completed · " + s.remaining + " remaining";
+  document.getElementById("overallPace").textContent = s.pace.toFixed(1);
+  document.getElementById("overallPercent").textContent = s.percentage.toFixed(0) + "%";
+  document.getElementById("overallProgressBar").style.width = s.percentage + "%";
+  document.getElementById("examDateInput").value = p.examDate;
+}
+
+function renderSubjects() {
+  const grid = document.getElementById("subjectsGrid");
+  grid.innerHTML = currentProfile().subjects.map((subject, index) => {
+    const s = getSubjectStats(subject);
+    const c = palette[subject.color] || palette.emerald;
+
+    return `
+      <article class="glass rounded-3xl border border-slate-200 p-5 shadow-sm">
+        <div class="flex items-start justify-between gap-3">
+          <div class="flex min-w-0 items-center gap-3">
+            <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${c.icon} font-black">${escapeHtml(subject.short)}</div>
+            <div class="min-w-0">
+              <h3 class="truncate font-bold">${escapeHtml(subject.name)}</h3>
+              <p class="text-xs text-slate-500">Subject ${index+1} of 6</p>
+            </div>
+          </div>
+          <span class="shrink-0 rounded-xl px-2.5 py-1 text-xs font-black ${c.badge}">${s.percentage.toFixed(0)}%</span>
+        </div>
+
+        <div class="mt-5">
+          <div class="mb-2 flex justify-between text-xs font-semibold">
+            <span class="text-slate-500">${s.completed} / ${s.total} lectures</span>
+            <span class="text-slate-400">${s.remaining} left</span>
+          </div>
+          <div class="h-2.5 overflow-hidden rounded-full bg-slate-100">
+            <div class="progress-bar h-full rounded-full ${c.bar}" style="width:${s.percentage}%"></div>
+          </div>
+        </div>
+
+        <div class="mt-5 grid grid-cols-2 gap-3">
+          <label>
+            <span class="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-slate-400">Total</span>
+            <input type="number" min="0" value="${s.total}"
+              onchange="updateSubject(${index}, 'total', this.value)"
+              class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-bold outline-none transition ${c.ring} focus:ring-2">
+          </label>
+          <label>
+            <span class="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-slate-400">Completed</span>
+            <input type="number" min="0" max="${s.total}" value="${s.completed}"
+              onchange="updateSubject(${index}, 'completed', this.value)"
+              class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-bold outline-none transition ${c.ring} focus:ring-2">
+          </label>
+        </div>
+
+        <div class="mt-4 grid grid-cols-2 gap-3">
+          <div class="rounded-2xl bg-slate-50 p-3">
+            <div class="text-[11px] font-bold uppercase tracking-wide text-slate-400">Days left</div>
+            <div class="mt-1 text-lg font-black">${s.daysLeft}</div>
+          </div>
+          <div class="rounded-2xl bg-ca-50 p-3">
+            <div class="text-[11px] font-bold uppercase tracking-wide text-ca-600">Daily pace</div>
+            <div class="mt-1 text-lg font-black text-ca-700">${s.pace.toFixed(1)}</div>
+          </div>
+        </div>
+      </article>
+    `;
+  }).join("");
+}
+
+function renderDailyPlan() {
+  document.getElementById("dailyPlan").innerHTML = currentProfile().subjects.map(subject => {
+    const s = getSubjectStats(subject);
+    const c = palette[subject.color] || palette.emerald;
+
+    let status;
+    if (s.remaining === 0) {
+      status = `<span class="rounded-lg bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-600">Complete 🎉</span>`;
+    } else if (s.daysLeft === 0) {
+      status = `<span class="rounded-lg bg-red-50 px-2 py-1 text-xs font-bold text-red-600">Deadline</span>`;
+    } else {
+      status = `<span class="rounded-lg bg-slate-100 px-2 py-1 text-xs font-bold text-slate-500">${s.remaining} left</span>`;
+    }
+
+    return `
+      <div class="flex items-center gap-3 rounded-2xl border border-slate-100 bg-white p-3">
+        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${c.icon} text-xs font-black">${escapeHtml(subject.short)}</div>
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center justify-between gap-2">
+            <p class="truncate text-sm font-bold text-slate-800">${escapeHtml(subject.name)}</p>
+            ${status}
+          </div>
+          <div class="mt-1 flex items-center gap-2">
+            <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100">
+              <div class="h-full rounded-full ${c.bar}" style="width:${s.percentage}%"></div>
+            </div>
+            <span class="w-14 text-right text-xs font-black text-slate-600">${s.pace.toFixed(1)}/day</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+function render() {
+  renderHeader();
+  renderSummary();
+  renderSubjects();
+  renderDailyPlan();
+}
+
+render();
+setInterval(render, 60000);
+</script>
+</body>
+</html>
